@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/anvari1313/splitwise.go"
+	"github.com/HarryAhuja/splitwise.go"
 )
 
 func main() {
@@ -32,7 +32,7 @@ func userExamples(client splitwise.Client) {
 	}
 	fmt.Println(userByID)
 
-	updatedUser, err := client.UpdateUser(context.Background(), currentUser.ID, splitwise.UserFirstNameField("Ahmad"), splitwise.UserLastNameField("Anvari"))
+	updatedUser, err := client.UpdateUser(context.Background(), currentUser.ID, splitwise.UserFirstNameField("Ahuja"), splitwise.UserLastNameField("Harry"))
 	if err != nil {
 		panic(err)
 	}
