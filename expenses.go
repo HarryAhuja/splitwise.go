@@ -231,7 +231,7 @@ func (c client) CreateExpenseByShare(ctx context.Context, expense Expense, users
 	return response.Expenses, nil
 }
 
-func (c client) Expenses(ctx context.Context) ([]ExpenseResponse, error) {
+func (c client) ExpensesByGroupID(ctx context.Context, groupID int) ([]ExpenseResponse, error) {
 	const pageSize = 50 // Splitwise default is 20; increase for efficiency
 	offset := 0
 
@@ -244,7 +244,7 @@ func (c client) Expenses(ctx context.Context) ([]ExpenseResponse, error) {
 
 	for {
 		// Build paginated URL
-		url := fmt.Sprintf("%s/api/v3.0/get_expenses?limit=%d&offset=%d", c.baseURL, pageSize, offset)
+		url := fmt.Sprintf("%s/api/v3.0/get_expenses?group_id=%d&limit=%d&offset=%d", c.baseURL, groupID, pageSize, offset)
 
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 		if err != nil {
