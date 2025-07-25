@@ -12,8 +12,8 @@ import (
 
 // Expenses contains method to work with expense resource
 type Expenses interface {
-	// Expenses returns current user's expenses
-	Expenses(ctx context.Context) ([]ExpenseResponse, error)
+	// ExpensesByGroupID returns current user's expenses
+	ExpensesByGroupID(ctx context.Context, groupID int) ([]ExpenseResponse, error)
 
 	// ExpenseByID returns info about an expense choose by id
 	ExpenseByID(ctx context.Context, id uint64) (ExpenseResponse, error)
