@@ -232,41 +232,56 @@ func (c client) CreateExpenseByShare(ctx context.Context, expense Expense, users
 }
 
 func (c client) Expenses(ctx context.Context) ([]ExpenseResponse, error) {
-	url := c.baseURL + "/api/v3.0/get_expenses"
+	const pageSize = 50 // Splitwise default is 20; increase for efficiency
+	offset := 0
+
+	var allExpenses []ExpenseResponse
 
 	token, err := c.AuthProvider.Auth()
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
-	if err != nil {
-		return nil, err
+	for {
+		// Build paginated URL
+		url := fmt.Sprintf("%s/api/v3.0/get_expenses?limit=%d&offset=%d", c.baseURL, pageSize, offset)
+
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+		if err != nil {
+			return nil, err
+		}
+		req.Header.Add("Authorization", "Bearer "+token)
+
+		res, err := c.client.Do(req)
+		if err != nil {
+			return nil, err
+		}
+		defer res.Body.Close()
+
+		err = c.checkError(res)
+		if err != nil {
+			return nil, err
+		}
+
+		var response expensesResponse
+		err = json.NewDecoder(res.Body).Decode(&response)
+		if err != nil {
+			return nil, err
+		}
+
+		// Append this page's expenses
+		allExpenses = append(allExpenses, response.Expenses...)
+
+		// If fewer than pageSize, this is the last page
+		if len(response.Expenses) < pageSize {
+			break
+		}
+
+		// Otherwise, increment offset
+		offset += pageSize
 	}
 
-	req.Header.Add("Authorization", "Bearer "+token)
-
-	res, err := c.client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer func() {
-		_ = res.Body.Close()
-	}()
-
-	err = c.checkError(res)
-	if err != nil {
-		return nil, err
-	}
-
-	var response expensesResponse
-	err = json.NewDecoder(res.Body).Decode(&response)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return response.Expenses, nil
+	return allExpenses, nil
 }
 
 type expenseByIDResponse struct {
